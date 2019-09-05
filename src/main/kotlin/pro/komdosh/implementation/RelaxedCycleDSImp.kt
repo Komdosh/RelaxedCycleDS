@@ -9,10 +9,16 @@ class RelaxedCycleDSImp<S : Queue<T>, T> : RelaxedCycleDS<S, T> {
 
     private var head: Node<S, T>? = null
 
+    private val cycleChanged: Mutex = Mutex()
+
     override fun insert(el: T) {
         if (head == null) {
-            head = Node(LinkedList<T>() as S, null, Mutex())
-            head!!.next = head
+            while (!cycleChanged.tryLock());
+            if (head == null) {
+                head = Node(LinkedList<T>() as S, null, Mutex())
+                head!!.next = head
+            }
+            cycleChanged.unlock()
         }
         val valHead = head!!
         var node = head!!
@@ -22,7 +28,9 @@ class RelaxedCycleDSImp<S : Queue<T>, T> : RelaxedCycleDS<S, T> {
             } while (node != head && !node.mutex.tryLock())
 
             if (node == head) {
-                node = node.createNewNext()!!
+                while (!cycleChanged.tryLock());
+                node = node.createNewNext(head!!)
+                cycleChanged.unlock()
             }
         }
 
@@ -33,16 +41,33 @@ class RelaxedCycleDSImp<S : Queue<T>, T> : RelaxedCycleDS<S, T> {
 
     override fun pop(): T? {
         if (head == null) {
+            println("head null")
             return null
         }
 
         val valHead = head!!
-        var node = head!!
-        while (!node.mutex.tryLock()) {
-            node = valHead.next!!
+        var node = head
+        var prev = valHead
+        while (!node!!.mutex.tryLock()) {
+            prev = node
+            node = node.next
+            if (node == null) {
+                println("node null")
+                return null
+            }
         }
 
         val value: T? = node.pop()
+        if (node.readyToDelete()) {
+            while (!cycleChanged.tryLock());
+            if (node == head && node.next == head) {
+                println("node null")
+                head = null
+            } else {
+                prev.next = node.next
+            }
+            cycleChanged.unlock()
+        }
         println("pop $value")
         node.mutex.unlock()
 
