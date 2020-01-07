@@ -47,7 +47,9 @@ class RelaxedCycleDSImp<S : BlockingQueue<T>, T> : RelaxedCycleDS<S, T> {
             cycleChanges.unlock()
         }
         println("pop $value")
-        node.mutex.unlock()
+        if (node.mutex.isLocked) {
+            node.mutex.unlock()
+        }
 
         return value
     }
