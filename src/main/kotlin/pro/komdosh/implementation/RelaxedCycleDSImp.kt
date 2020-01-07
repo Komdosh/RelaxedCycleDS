@@ -3,34 +3,26 @@ package pro.komdosh.implementation
 import kotlinx.coroutines.sync.Mutex
 import pro.komdosh.api.RelaxedCycleDS
 import pro.komdosh.model.Node
-import java.util.*
+import java.util.concurrent.BlockingQueue
+import java.util.concurrent.PriorityBlockingQueue
 
-class RelaxedCycleDSImp<S : Queue<T>, T> : RelaxedCycleDS<S, T> {
+class RelaxedCycleDSImp<S : BlockingQueue<T>, T> : RelaxedCycleDS<S, T> {
 
-    private var head: Node<S, T>? = null
+    private val head: Node<S, T> = Node(structure = PriorityBlockingQueue<T>() as S, isHead = true)
 
-    private val cycleChanged: Mutex = Mutex()
+    private val cycleChanges: Mutex = Mutex()
 
     override fun insert(el: T) {
-        if (head == null) {
-            while (!cycleChanged.tryLock());
-            if (head == null) {
-                head = Node(LinkedList<T>() as S, null, Mutex())
-                head!!.next = head
-            }
-            cycleChanged.unlock()
-        }
-        val valHead = head!!
-        var node = head!!
-        if (!head!!.mutex.tryLock()) {
+        var node = head
+        if (!node.mutex.tryLock()) {
             do {
-                node = valHead.next!!
-            } while (node != head && !node.mutex.tryLock())
+                node = node.next
+            } while (!node.isHead && !node.mutex.tryLock())
 
-            if (node == head) {
-                while (!cycleChanged.tryLock());
-                node = node.createNewNext(head!!)
-                cycleChanged.unlock()
+            if (node.isHead) {
+                while (!cycleChanges.tryLock());
+                node = node.createNewNext(head)
+                cycleChanges.unlock()
             }
         }
 
@@ -40,38 +32,32 @@ class RelaxedCycleDSImp<S : Queue<T>, T> : RelaxedCycleDS<S, T> {
     }
 
     override fun pop(): T? {
-        if (head == null) {
-            println("head null")
-            return null
-        }
-
-        val valHead = head!!
         var node = head
-        var prev = valHead
-        while (!node!!.mutex.tryLock()) {
+        var prev: Node<S, T>
+        do {
             prev = node
             node = node.next
-            if (node == null) {
-                println("node null")
-                return null
-            }
-        }
+        } while (!node.isEmpty() && !node.mutex.tryLock())
 
         val value: T? = node.pop()
-        if (node.readyToDelete()) {
-            while (!cycleChanged.tryLock());
-            if (node == head && node.next == head) {
-                println("node null")
-                head = null
-            } else {
-                prev.next = node.next
-            }
-            cycleChanged.unlock()
+        if (!node.isHead && node.readyToDelete()) {
+            println("delete $node")
+            while (!cycleChanges.tryLock());
+            prev.next = node.next
+            cycleChanges.unlock()
         }
         println("pop $value")
         node.mutex.unlock()
 
-        return value;
+        return value
+    }
+
+    override fun print() {
+        var node = head
+        do {
+            println(node)
+            node = node.next
+        } while (!node.isHead)
     }
 
 }

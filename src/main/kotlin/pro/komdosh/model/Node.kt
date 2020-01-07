@@ -1,20 +1,33 @@
 package pro.komdosh.model
 
 import kotlinx.coroutines.sync.Mutex
-import java.util.*
+import java.util.concurrent.BlockingQueue
+import java.util.concurrent.PriorityBlockingQueue
 
-data class Node<S : Queue<T>, T>(private val structure: S, var next: Node<S, T>?, val mutex: Mutex) {
+data class Node<S : BlockingQueue<T>, T>(
+    private val structure: S,
+    val mutex: Mutex = Mutex(),
+    var isHead: Boolean = false
+) {
+
+    var next: Node<S, T>
+
+    init {
+        next = this
+    }
+
     fun insert(el: T) {
         structure.add(el)
     }
 
     fun pop(): T? {
-       return structure.poll()
+        return structure.poll()
     }
 
     fun createNewNext(head: Node<S, T>): Node<S, T> {
-        next = Node(LinkedList<T>() as S, head, Mutex(true))
-        return next!!
+        next = Node(PriorityBlockingQueue<T>() as S, Mutex(true))
+        next.next = head
+        return next
     }
 
     override fun toString(): String {
@@ -22,6 +35,10 @@ data class Node<S : Queue<T>, T>(private val structure: S, var next: Node<S, T>?
     }
 
     fun readyToDelete(): Boolean {
+        return structure.isEmpty()
+    }
+
+    fun isEmpty(): Boolean {
         return structure.isEmpty()
     }
 
@@ -42,6 +59,4 @@ data class Node<S : Queue<T>, T>(private val structure: S, var next: Node<S, T>?
         result = 31 * result + mutex.hashCode()
         return result
     }
-
-
 }
