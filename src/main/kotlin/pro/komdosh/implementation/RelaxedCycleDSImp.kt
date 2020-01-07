@@ -25,10 +25,10 @@ class RelaxedCycleDSImp<S : BlockingQueue<T>, T> : RelaxedCycleDS<S, T> {
                 cycleChanges.unlock()
             }
         }
-
-        println("insert $el")
         node.insert(el)
-        node.mutex.unlock()
+        if (node.mutex.isLocked) {
+            node.mutex.unlock()
+        }
     }
 
     override fun pop(): T? {
@@ -41,12 +41,10 @@ class RelaxedCycleDSImp<S : BlockingQueue<T>, T> : RelaxedCycleDS<S, T> {
 
         val value: T? = node.pop()
         if (!node.isHead && node.readyToDelete()) {
-            println("delete $node")
             while (!cycleChanges.tryLock());
             prev.next = node.next
             cycleChanges.unlock()
         }
-        println("pop $value")
         if (node.mutex.isLocked) {
             node.mutex.unlock()
         }
@@ -60,6 +58,21 @@ class RelaxedCycleDSImp<S : BlockingQueue<T>, T> : RelaxedCycleDS<S, T> {
             println(node)
             node = node.next
         } while (!node.isHead)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as RelaxedCycleDSImp<*, *>
+
+        if (head != other.head) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return head.hashCode()
     }
 
 }

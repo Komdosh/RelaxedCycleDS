@@ -48,15 +48,17 @@ data class Node<S : BlockingQueue<T>, T>(
 
         other as Node<*, *>
 
-        if (structure != other.structure) return false
-        if (mutex != other.mutex) return false
+
+        if (!arrayOf(structure.toList()).contentEquals(arrayOf(other.structure.toList()))) return false
+        if (isHead != other.isHead) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = structure.hashCode()
-        result = 31 * result + mutex.hashCode()
+        var result = arrayOf(structure.toList()).contentHashCode()
+
+        result = 31 * result + isHead.hashCode()
         return result
     }
 }
