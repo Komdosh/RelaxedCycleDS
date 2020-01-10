@@ -15,7 +15,6 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    testCompileOnly("org.jetbrains.kotlinx:lincheck:2.5.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3")
     testImplementation("org.junit.jupiter:junit-jupiter:5.5.1")
 }
