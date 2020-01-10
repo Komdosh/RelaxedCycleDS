@@ -1,43 +1,48 @@
 
-import pro.komdosh.api.RelaxedCycleDS
-import pro.komdosh.implementation.RelaxedCycleDSImp
+import pro.komdosh.api.RelaxedCircularDS
+import pro.komdosh.implementation.CircularPriorityQueueImp
 import java.lang.Thread.sleep
 import java.util.concurrent.BlockingQueue
 import kotlin.concurrent.thread
 
 fun main() {
-    val rcd: RelaxedCycleDS<BlockingQueue<Int>, Int> = RelaxedCycleDSImp()
+    val rcd: RelaxedCircularDS<BlockingQueue<Int>, Int> = CircularPriorityQueueImp()
 
-    val iterations = 10
-    thread{
-        for (i in 0..iterations) {
-            rcd.insert(i)
-            sleep(100)
-        }
-    }
-    thread {
-        for (i in 0..iterations) {
-            rcd.insert(i)
-            sleep(100)
-        }
-    }
+    //usage example
+    insert(rcd)
+    insert(rcd)
+    insert(rcd)
 
     sleep(2000)
     rcd.print()
     sleep(2000)
 
-    thread {
-        for (i in 0..iterations) {
-            rcd.pop()
-            sleep(100)
-        }
-    }
+    pop(rcd)
+    pop(rcd)
+    pop(rcd)
 
+}
+
+private fun pop(
+    rcd: RelaxedCircularDS<BlockingQueue<Int>, Int>,
+    iterations: Int = 10
+) {
     thread {
         for (i in 0..iterations) {
-            rcd.pop()
-            sleep(100)
+            val value = rcd.poll()
+//            println("Pop $value")
         }
     }
-    sleep(2000)
+}
+
+private fun insert(
+    rcd: RelaxedCircularDS<BlockingQueue<Int>, Int>,
+    iterations: Int = 10
+) {
+    thread {
+        for (i in 0..iterations) {
+            rcd.offer(i)
+//            println("Insert $i")
+        }
+    }
 }
