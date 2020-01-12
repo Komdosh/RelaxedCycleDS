@@ -1,12 +1,10 @@
 package pro.komdosh.implementation
 
-import kotlinx.coroutines.sync.Mutex
 import pro.komdosh.api.RelaxedCircularDS
 import pro.komdosh.model.Node
 import java.util.*
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.PriorityBlockingQueue
-import kotlin.collections.HashMap
 
 class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
     private val priority: Priority = Priority.MAX
@@ -19,12 +17,10 @@ class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
     }
 
     private val head: Node<S, T> = Node(
-        structure = PriorityBlockingQueue<T>(16, priorityComparator) as S,
+        structure = PriorityBlockingQueue<T>(1024, priorityComparator) as S,
         isHead = true,
         priorityComparator = priorityComparator
     )
-
-    private val cycleChanges: Mutex = Mutex()
 
     override fun offer(el: T) {
         var node = head
@@ -33,14 +29,10 @@ class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
                 node = node.next
             } while (!node.isHead && !node.mutex.tryLock())
 
-            if (node.isHead) {/*
-                runBlocking {
-                    cycleChanges.withLock {*/
+            if (node.isHead) {
                 head.next = node.createNewNext()
                 node = head.next
             }
-//                }
-//            }
         }
         node.insert(el)
         node.mutex.unlock()
@@ -53,6 +45,7 @@ class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
         if (nodeToPop.readyToDelete()) {
             prev.next = nodeToPop.next
         }
+
         return value
     }
 
@@ -62,26 +55,25 @@ class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
     }
 
     private fun getPriorNode(): Pair<Node<S, T>, Node<S, T>> {
-        var node = head
+        var node = head.next
         var prevNode: Node<S, T> = head
-        val values = HashMap<Node<S, T>, T>()
+
+        if (node.isHead) {
+            return Pair(prevNode, node)
+        }
+
+        var priorNode = head
+        var priorValue = head.peek()
 
         do {
             val value = node.peek()
-            if (value != null) {
-                values[node] = value
+            if (priorValue == null || (value != null && priorValue < value)) {
+                priorValue = value
+                priorNode = node
             }
             node = node.next
+            prevNode = node
         } while (!node.isHead)
-
-        val priorNode = if (priority == Priority.MAX)
-            values.maxBy { it.value }?.key ?: head
-        else
-            values.minBy { it.value }?.key ?: head
-
-        do {
-            prevNode = prevNode.next
-        } while (prevNode.next != priorNode)
 
         return Pair(prevNode, priorNode)
     }
@@ -100,7 +92,7 @@ class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
         return true
     }
 
-    override fun print() {
+    override fun printInfo() {
         var node = head
         var size = 0
         var structures = 0

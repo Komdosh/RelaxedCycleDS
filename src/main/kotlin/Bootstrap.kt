@@ -14,7 +14,7 @@ fun main() {
     insert(rcd)
 
     sleep(2000)
-    rcd.print()
+    rcd.printInfo()
     sleep(2000)
 
     pop(rcd)
@@ -25,24 +25,24 @@ fun main() {
 
 private fun pop(
     rcd: RelaxedCircularDS<BlockingQueue<Int>, Int>,
-    iterations: Int = 10
+    iterations: Int = 1000
 ) {
     thread {
         for (i in 0..iterations) {
             val value = rcd.poll()
-//            println("Pop $value")
+            println("Pop $value")
         }
     }
 }
 
 private fun insert(
     rcd: RelaxedCircularDS<BlockingQueue<Int>, Int>,
-    iterations: Int = 10
+    iterations: Int = 1000
 ) {
     thread {
         for (i in 0..iterations) {
             rcd.offer(i)
-//            println("Insert $i")
+            println("Insert $i")
         }
     }
 }

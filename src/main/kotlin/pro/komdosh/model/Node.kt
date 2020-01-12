@@ -5,25 +5,38 @@ import java.util.*
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.PriorityBlockingQueue
 
-data class Node<S : BlockingQueue<T>, T>(
+data class Node<S : BlockingQueue<T>, T : Comparable<T>>(
     private val structure: S,
     val mutex: Mutex = Mutex(),
     private val priorityComparator: Comparator<T>?,
     var isHead: Boolean = false
 ) {
-
     var next: Node<S, T> = this
 
+    private var maxValue: T? = null
+
     fun insert(el: T) {
+        if (maxValue == null) {
+            maxValue = el
+        } else if (el > maxValue!!) {
+            maxValue = el
+        }
+
         structure.offer(el)
     }
 
+
     fun pop(): T? {
-        return structure.poll()
+        val value = structure.poll()
+        maxValue = null
+        return value
     }
 
     fun peek(): T? {
-        return structure.peek()
+        if (maxValue == null) {
+            maxValue = structure.peek()
+        }
+        return maxValue
     }
 
     fun size(): Int {
@@ -32,7 +45,7 @@ data class Node<S : BlockingQueue<T>, T>(
 
     fun createNewNext(): Node<S, T> {
         val node = Node(
-            PriorityBlockingQueue<T>(16, priorityComparator) as S,
+            PriorityBlockingQueue<T>(1024, priorityComparator) as S,
             Mutex(true),
             priorityComparator = priorityComparator
         )
@@ -45,7 +58,7 @@ data class Node<S : BlockingQueue<T>, T>(
     }
 
     fun readyToDelete(): Boolean {
-        return !isHead && structure.isEmpty()
+        return !isHead && isEmpty()
     }
 
     fun isEmpty(): Boolean {

@@ -1,15 +1,13 @@
 package pro.komdosh.implementation
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import pro.komdosh.api.RelaxedCircularDS
 import java.util.*
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.PriorityBlockingQueue
+import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
@@ -20,43 +18,65 @@ internal class ParallelExecutionTest {
     @BeforeEach
     fun init() {
         rcds = CircularPriorityQueueImp()
-        blockingQueue = PriorityBlockingQueue(16, Collections.reverseOrder())
+        blockingQueue = PriorityBlockingQueue(1048576, Collections.reverseOrder())
+    }
+
+    @Test
+    @ExperimentalTime
+    fun multipleThreadStressTest() {
+        val iterations = 600000
+        val step = 100000
+        val threads = 4
+
+        var total = 0
+        var wins = 0
+        var time = 0.0
+        for (t in 2..threads) {
+            for (iter in step..iterations step step) {
+                total++
+                println("Threads: $t, Iterations: $iter")
+                val relaxedDuration = structureTest(t, iter, "Relaxed", { i -> rcds.offer(i) }, { rcds.poll() })
+                rcds.printInfo()
+                val strongDuration =
+                    structureTest(t, iter, "Strong", { i -> blockingQueue.offer(i) }, { blockingQueue.poll() })
+                val res = if (strongDuration > relaxedDuration) {
+                    wins++
+                    "win"
+                } else "loose"
+                time += (strongDuration - relaxedDuration).inMilliseconds
+                println("${strongDuration - relaxedDuration} $res")
+            }
+        }
+        println("Summary $wins/$total $time")
+
     }
 
     @ExperimentalTime
-    @Test
-    fun multipleThreadStressTest() {
-        val iterations = 2000000
-        val threads = 3
-
-        val relaxedTime = measureTime {
-            structureTest(threads, iterations, { i -> rcds.offer(i) }, { rcds.poll() })
+    private fun structureTest(
+        threads: Int,
+        iterations: Int,
+        name: String,
+        offerFunction: (Int) -> Unit,
+        pollFunction: () -> Int?
+    ): Duration {
+        val offerTime = measureTime {
+            runIterations(threads, iterations) {
+                offerFunction(it)
+            }
         }
-
-        rcds.print()
-
-        val traditionalTime = measureTime {
-            structureTest(threads, iterations, { i -> blockingQueue.offer(i) }, { blockingQueue.poll() })
+        val pollTime = measureTime {
+            runIterations(threads, iterations) {
+                pollFunction()
+            }
         }
-
-        println(blockingQueue.size)
-        println(relaxedTime)
-        println(traditionalTime)
-    }
-
-
-    private fun structureTest(threads: Int, iterations: Int, offerFunction: (Int) -> Unit, pollFunction: () -> Int?) {
-        runIterations(threads, iterations) {
-            offerFunction(it)
-        }
-        runIterations(threads, iterations) {
-            pollFunction()
-        }
+        val duration = offerTime + pollTime
+        println("$name OfferTime: $offerTime, PollTime: $pollTime, TotalTime: $duration")
+        return duration
     }
 
     private fun runIterations(threads: Int, iterations: Int, doOperation: (Int) -> Unit) {
         runBlocking {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.IO + Job()) {
                 for (t in 0 until threads) {
                     launch {
                         for (i in 0 until iterations) {
