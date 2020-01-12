@@ -24,18 +24,19 @@ class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
 
     override fun offer(el: T) {
         var node = head
-        if (!node.mutex.tryLock()) {
-            do {
-                node = node.next
-            } while (!node.isHead && !node.mutex.tryLock())
-
+        if (!node.isUsed.compareAndSet(false, true)) {
+            if (!node.next.isHead) {
+                do {
+                    node = node.next
+                } while (!node.isHead && !node.isUsed.compareAndSet(false, true))
+            }
             if (node.isHead) {
                 head.next = node.createNewNext()
                 node = head.next
             }
         }
         node.insert(el)
-        node.mutex.unlock()
+        node.isUsed.set(false)
     }
 
     override fun poll(): T? {

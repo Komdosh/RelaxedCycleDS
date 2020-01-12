@@ -1,13 +1,13 @@
 package pro.komdosh.model
 
-import kotlinx.coroutines.sync.Mutex
 import java.util.*
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.PriorityBlockingQueue
+import java.util.concurrent.atomic.AtomicBoolean
 
 data class Node<S : BlockingQueue<T>, T : Comparable<T>>(
     private val structure: S,
-    val mutex: Mutex = Mutex(),
+    val isUsed: AtomicBoolean = AtomicBoolean(),
     private val priorityComparator: Comparator<T>?,
     var isHead: Boolean = false
 ) {
@@ -24,7 +24,6 @@ data class Node<S : BlockingQueue<T>, T : Comparable<T>>(
 
         structure.offer(el)
     }
-
 
     fun pop(): T? {
         val value = structure.poll()
@@ -46,7 +45,7 @@ data class Node<S : BlockingQueue<T>, T : Comparable<T>>(
     fun createNewNext(): Node<S, T> {
         val node = Node(
             PriorityBlockingQueue<T>(1024, priorityComparator) as S,
-            Mutex(true),
+            AtomicBoolean(true),
             priorityComparator = priorityComparator
         )
         node.next = next
@@ -54,7 +53,7 @@ data class Node<S : BlockingQueue<T>, T : Comparable<T>>(
     }
 
     override fun toString(): String {
-        return "Node(structure=${structure.size}, mutex=$mutex)"
+        return "Node(structure=${structure.size}, mutex=$isUsed)"
     }
 
     fun readyToDelete(): Boolean {

@@ -36,7 +36,6 @@ internal class ParallelExecutionTest {
                 total++
                 println("Threads: $t, Iterations: $iter")
                 val relaxedDuration = structureTest(t, iter, "Relaxed", { i -> rcds.offer(i) }, { rcds.poll() })
-                rcds.printInfo()
                 val strongDuration =
                     structureTest(t, iter, "Strong", { i -> blockingQueue.offer(i) }, { blockingQueue.poll() })
                 val res = if (strongDuration > relaxedDuration) {
