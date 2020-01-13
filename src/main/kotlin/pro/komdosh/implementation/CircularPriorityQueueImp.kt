@@ -22,7 +22,7 @@ class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
         priorityComparator = priorityComparator
     )
 
-    override fun offer(el: T) {
+    override fun offer(el: T): Boolean {
         var node = head
         if (!node.isUsed.compareAndSet(false, true)) {
             if (!node.next.isHead) {
@@ -31,12 +31,14 @@ class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
                 } while (!node.isHead && !node.isUsed.compareAndSet(false, true))
             }
             if (node.isHead) {
-                head.next = node.createNewNext()
-                node = head.next
+                val next = node.createNewNext()
+                head.next = next
+                node = next
             }
         }
-        node.insert(el)
+        val inserted = node.insert(el)
         node.isUsed.set(false)
+        return inserted
     }
 
     override fun poll(): T? {

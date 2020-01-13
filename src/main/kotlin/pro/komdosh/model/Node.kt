@@ -15,14 +15,14 @@ data class Node<S : BlockingQueue<T>, T : Comparable<T>>(
 
     private var maxValue: T? = null
 
-    fun insert(el: T) {
+    fun insert(el: T): Boolean {
         if (maxValue == null) {
             maxValue = el
         } else if (el > maxValue!!) {
             maxValue = el
         }
 
-        structure.offer(el)
+        return structure.offer(el)
     }
 
     fun pop(): T? {

@@ -1,4 +1,3 @@
-
 import pro.komdosh.api.RelaxedCircularDS
 import pro.komdosh.implementation.CircularPriorityQueueImp
 import java.lang.Thread.sleep
@@ -6,6 +5,7 @@ import java.util.concurrent.BlockingQueue
 import kotlin.concurrent.thread
 
 fun main() {
+//    val rcd: BlockingQueue<Int> = PriorityBlockingQueue<Int>(1024, Collections.reverseOrder())
     val rcd: RelaxedCircularDS<BlockingQueue<Int>, Int> = CircularPriorityQueueImp()
 
     //usage example
@@ -14,7 +14,7 @@ fun main() {
     insert(rcd)
 
     sleep(2000)
-    rcd.printInfo()
+
     sleep(2000)
 
     pop(rcd)

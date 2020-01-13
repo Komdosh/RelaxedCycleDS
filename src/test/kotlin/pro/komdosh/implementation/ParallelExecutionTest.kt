@@ -24,9 +24,9 @@ internal class ParallelExecutionTest {
     @Test
     @ExperimentalTime
     fun multipleThreadStressTest() {
-        val iterations = 1000000
+        val iterations = 2000000
         val step = 100000
-        val threads = 6
+        val threads = 10
 
         var total = 0
         var wins = 0
