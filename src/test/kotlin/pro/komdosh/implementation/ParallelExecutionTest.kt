@@ -18,15 +18,15 @@ internal class ParallelExecutionTest {
     @BeforeEach
     fun init() {
         rcds = CircularPriorityQueueImp()
-        blockingQueue = PriorityBlockingQueue(1048576, Collections.reverseOrder())
+        blockingQueue = PriorityBlockingQueue(1024, Collections.reverseOrder())
     }
 
     @Test
     @ExperimentalTime
     fun multipleThreadStressTest() {
-        val iterations = 600000
+        val iterations = 1000000
         val step = 100000
-        val threads = 4
+        val threads = 6
 
         var total = 0
         var wins = 0

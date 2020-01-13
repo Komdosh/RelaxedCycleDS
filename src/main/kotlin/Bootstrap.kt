@@ -25,7 +25,7 @@ fun main() {
 
 private fun pop(
     rcd: RelaxedCircularDS<BlockingQueue<Int>, Int>,
-    iterations: Int = 1000
+    iterations: Int = 100000
 ) {
     thread {
         for (i in 0..iterations) {
@@ -37,7 +37,7 @@ private fun pop(
 
 private fun insert(
     rcd: RelaxedCircularDS<BlockingQueue<Int>, Int>,
-    iterations: Int = 1000
+    iterations: Int = 100000
 ) {
     thread {
         for (i in 0..iterations) {

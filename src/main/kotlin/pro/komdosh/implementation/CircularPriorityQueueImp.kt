@@ -7,7 +7,7 @@ import java.util.concurrent.BlockingQueue
 import java.util.concurrent.PriorityBlockingQueue
 
 class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
-    private val priority: Priority = Priority.MAX
+    priority: Priority = Priority.MAX
 ) : RelaxedCircularDS<S, T> {
 
     private val priorityComparator: Comparator<T>? = if (priority == Priority.MAX) Collections.reverseOrder() else null
@@ -40,7 +40,8 @@ class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
     }
 
     override fun poll(): T? {
-        val (prev: Node<S, T>, nodeToPop: Node<S, T>) = getPriorNode()
+        val prev = getPrevPriorNode()
+        val nodeToPop = prev.next
 
         val value: T? = nodeToPop.pop()
         if (nodeToPop.readyToDelete()) {
@@ -51,32 +52,32 @@ class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
     }
 
     override fun peek(): T? {
-        val (_, nodeToPop: Node<S, T>) = getPriorNode()
-        return nodeToPop.peek()
+        val prev = getPrevPriorNode()
+        return prev.next.peek()
     }
 
-    private fun getPriorNode(): Pair<Node<S, T>, Node<S, T>> {
+    private fun getPrevPriorNode(): Node<S, T> {
         var node = head.next
         var prevNode: Node<S, T> = head
 
         if (node.isHead) {
-            return Pair(prevNode, node)
+            return node
         }
 
-        var priorNode = head
-        var priorValue = head.peek()
+        var priorValue: T? = prevNode.peek()
+        var prevPriorNode: Node<S, T> = prevNode
 
         do {
             val value = node.peek()
             if (priorValue == null || (value != null && priorValue < value)) {
                 priorValue = value
-                priorNode = node
+                prevPriorNode = prevNode
             }
             node = node.next
             prevNode = node
         } while (!node.isHead)
 
-        return Pair(prevNode, priorNode)
+        return prevPriorNode
     }
 
 
