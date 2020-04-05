@@ -9,23 +9,21 @@ fun main() {
     val rcd: RelaxedCircularDS<BlockingQueue<Int>, Int> = CircularPriorityQueueImp()
 
     //usage example
-    insert(rcd)
-    insert(rcd)
-    insert(rcd)
+    insertRelaxed(rcd)
+    insertRelaxed(rcd)
+    insertRelaxed(rcd)
 
     sleep(2000)
 
-    sleep(2000)
-
-    pop(rcd)
-    pop(rcd)
-    pop(rcd)
+    popRelaxed(rcd)
+    popRelaxed(rcd)
+    popRelaxed(rcd)
 
 }
 
-private fun pop(
+private fun popRelaxed(
     rcd: RelaxedCircularDS<BlockingQueue<Int>, Int>,
-    iterations: Int = 100000
+    iterations: Int = 100
 ) {
     thread {
         for (i in 0..iterations) {
@@ -35,9 +33,9 @@ private fun pop(
     }
 }
 
-private fun insert(
+private fun insertRelaxed(
     rcd: RelaxedCircularDS<BlockingQueue<Int>, Int>,
-    iterations: Int = 100000
+    iterations: Int = 100
 ) {
     thread {
         for (i in 0..iterations) {

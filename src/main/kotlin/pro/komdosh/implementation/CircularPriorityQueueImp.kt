@@ -17,7 +17,7 @@ class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
     }
 
     private val head: Node<S, T> = Node(
-        structure = PriorityBlockingQueue<T>(1024, priorityComparator) as S,
+        structure = PriorityBlockingQueue(1024, priorityComparator) as S,
         isHead = true,
         priorityComparator = priorityComparator
     )
