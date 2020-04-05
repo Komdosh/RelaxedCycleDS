@@ -13,29 +13,16 @@ data class Node<S : BlockingQueue<T>, T : Comparable<T>>(
 ) {
     var next: Node<S, T> = this
 
-    private var maxValue: T? = null
-
     fun insert(el: T): Boolean {
-        if (maxValue == null) {
-            maxValue = el
-        } else if (el > maxValue!!) {
-            maxValue = el
-        }
-
         return structure.offer(el)
     }
 
     fun pop(): T? {
-        val value = structure.poll()
-        maxValue = null
-        return value
+        return structure.poll()
     }
 
     fun peek(): T? {
-        if (maxValue == null) {
-            maxValue = structure.peek()
-        }
-        return maxValue
+        return structure.peek()
     }
 
     fun size(): Int {
@@ -44,7 +31,7 @@ data class Node<S : BlockingQueue<T>, T : Comparable<T>>(
 
     fun createNewNext(): Node<S, T> {
         val node = Node(
-            PriorityBlockingQueue<T>(1024, priorityComparator) as S,
+            PriorityBlockingQueue(1024, priorityComparator) as S,
             AtomicBoolean(true),
             priorityComparator = priorityComparator
         )

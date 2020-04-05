@@ -1,6 +1,5 @@
 import pro.komdosh.api.RelaxedCircularDS
 import pro.komdosh.implementation.CircularPriorityQueueImp
-import sun.awt.RepaintArea
 import java.lang.Thread.sleep
 import java.util.*
 import java.util.concurrent.BlockingQueue
@@ -8,11 +7,10 @@ import java.util.concurrent.PriorityBlockingQueue
 import kotlin.concurrent.thread
 import kotlin.random.Random
 import kotlin.system.measureNanoTime
-import kotlin.system.measureTimeMillis
 
 const val THREADS_NUM = 8
-const val ITERATIONS = 500_000
-const val ITERATION_STEP = 250_000
+const val ITERATIONS = 1_000_000
+const val ITERATION_STEP = 500_000
 const val REPEATS = 4
 
 data class Measurements(
@@ -34,7 +32,7 @@ data class Measurements(
 }
 
 fun main() {
-    println("BlockingQueue")
+/*    println("BlockingQueue")
     println("Threads,Iterations,Insert,Pop,Random")
     for (threads in 1..THREADS_NUM) {
         val measurements = Measurements(threads)
@@ -44,7 +42,7 @@ fun main() {
             }
         }
         println(measurements.toString())
-    }
+    }*/
 
     println("RelaxedCircularDS")
     println("Threads,Iterations,Insert,Pop,Random")
