@@ -9,7 +9,7 @@ data class Node<S : BlockingQueue<T>, T : Comparable<T>>(
     private val structure: S,
     val isUsed: AtomicBoolean = AtomicBoolean(),
     private val priorityComparator: Comparator<T>?,
-    var isHead: Boolean = false
+    var isHead: AtomicBoolean = AtomicBoolean()
 ) {
     var next: Node<S, T> = this
 
@@ -44,7 +44,7 @@ data class Node<S : BlockingQueue<T>, T : Comparable<T>>(
     }
 
     fun readyToDelete(): Boolean {
-        return !isHead && isEmpty()
+        return !isHead.get() && isEmpty()
     }
 
     fun isEmpty(): Boolean {

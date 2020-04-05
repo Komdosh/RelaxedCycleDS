@@ -5,6 +5,7 @@ import pro.komdosh.model.Node
 import java.util.*
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.PriorityBlockingQueue
+import java.util.concurrent.atomic.AtomicBoolean
 
 class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
     priority: Priority = Priority.MAX
@@ -18,19 +19,19 @@ class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
 
     private val head: Node<S, T> = Node(
         structure = PriorityBlockingQueue(1024, priorityComparator) as S,
-        isHead = true,
+        isHead = AtomicBoolean(true),
         priorityComparator = priorityComparator
     )
 
     override fun offer(el: T): Boolean {
         var node = head
         if (!node.isUsed.compareAndSet(false, true)) {
-            if (!node.next.isHead) {
+            if (!node.next.isHead.get()) {
                 do {
                     node = node.next
-                } while (!node.isHead && !node.isUsed.compareAndSet(false, true))
+                } while (!node.isHead.get() && !node.isUsed.compareAndSet(false, true))
             }
-            if (node.isHead) {
+            if (node.isHead.get()) {
                 val next = node.createNewNext()
                 head.next = next
                 node = next
@@ -62,7 +63,7 @@ class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
         var node = head.next
         var prevNode: Node<S, T> = head
 
-        if (node.isHead) {
+        if (node.isHead.get()) {
             return node
         }
 
@@ -77,7 +78,7 @@ class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
             }
             node = node.next
             prevNode = node
-        } while (!node.isHead)
+        } while (!node.isHead.get())
 
         return prevPriorNode
     }
@@ -104,7 +105,7 @@ class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
             structures++
             size += node.size()
             node = node.next
-        } while (!node.isHead)
+        } while (!node.isHead.get())
         println("Size: $size, Structures $structures")
     }
 }
