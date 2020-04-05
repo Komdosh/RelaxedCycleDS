@@ -9,8 +9,8 @@ import kotlin.random.Random
 import kotlin.system.measureNanoTime
 
 const val THREADS_NUM = 8
-const val ITERATIONS = 1_000_000
-const val ITERATION_STEP = 500_000
+const val ITERATIONS = 20_000_000
+const val ITERATION_STEP = 10_000_000
 const val REPEATS = 4
 
 data class Measurements(
@@ -25,14 +25,14 @@ data class Measurements(
         val insertThroughput = getThroughputForSeconds(insertTime)
         val popThroughput = getThroughputForSeconds(popTime)
         val randomThroughput = getThroughputForSeconds(randomTime)
-        return "$threads,$iterations,$insertThroughput,$popThroughput,$randomThroughput"
+        return "$threads,$insertThroughput,$popThroughput,$randomThroughput"
     }
 
     private fun getThroughputForSeconds(time: Long) = (((iterations * repeats) / time.toDouble()) * 1000 * 1000).toLong()
 }
 
 fun main() {
-/*    println("BlockingQueue")
+    println("BlockingQueue")
     println("Threads,Iterations,Insert,Pop,Random")
     for (threads in 1..THREADS_NUM) {
         val measurements = Measurements(threads)
@@ -42,7 +42,7 @@ fun main() {
             }
         }
         println(measurements.toString())
-    }*/
+    }
 
     println("RelaxedCircularDS")
     println("Threads,Iterations,Insert,Pop,Random")
