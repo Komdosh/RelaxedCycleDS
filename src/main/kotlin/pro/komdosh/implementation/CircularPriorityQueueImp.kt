@@ -108,4 +108,9 @@ class CircularPriorityQueueImp<S : BlockingQueue<T>, T : Comparable<T>>(
         } while (!node.isHead.get())
         println("Size: $size, Structures $structures")
     }
+
+    override fun clear() {
+        head.next = head
+        head.clear()
+    }
 }

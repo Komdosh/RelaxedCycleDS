@@ -50,4 +50,8 @@ data class Node<S : BlockingQueue<T>, T : Comparable<T>>(
     fun isEmpty(): Boolean {
         return structure.isEmpty()
     }
+
+    fun clear() {
+        structure.clear()
+    }
 }

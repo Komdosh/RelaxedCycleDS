@@ -9,8 +9,8 @@ import kotlin.random.Random
 import kotlin.system.measureNanoTime
 
 const val THREADS_NUM = 8
-const val ITERATIONS = 20_000_000
-const val ITERATION_STEP = 10_000_000
+const val ITERATIONS = 30_000_000
+const val ITERATION_STEP = 15_000_000
 const val REPEATS = 4
 
 data class Measurements(
@@ -28,6 +28,7 @@ data class Measurements(
         return "$threads,$insertThroughput,$popThroughput,$randomThroughput"
     }
 
+
     private fun getThroughputForSeconds(time: Long) = (((iterations * repeats) / time.toDouble()) * 1000 * 1000).toLong()
 }
 
@@ -43,6 +44,7 @@ fun main() {
         }
         println(measurements.toString())
     }
+
 
     println("RelaxedCircularDS")
     println("Threads,Iterations,Insert,Pop,Random")
@@ -60,6 +62,8 @@ fun main() {
 
 fun runBlocking(threads: Int, iterations: Int, measurements: Measurements) {
     val blockingQueue: BlockingQueue<Int> = PriorityBlockingQueue(ITERATIONS, Collections.reverseOrder())
+    insertBlocking(blockingQueue, 1500)
+    blockingQueue.clear()
 
     //usage example
     val insertTime = measureNanoTime {
@@ -94,7 +98,8 @@ fun runBlocking(threads: Int, iterations: Int, measurements: Measurements) {
 
 fun runRelaxed(threads: Int, iterations: Int, measurements: Measurements) {
     val rcd: RelaxedCircularDS<BlockingQueue<Int>, Int> = CircularPriorityQueueImp()
-
+    insertRelaxed(rcd, 1500)
+    rcd.clear()
     //usage example
     val insertTime = measureNanoTime {
         for (i in 0..threads) {
